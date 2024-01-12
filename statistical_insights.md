@@ -185,7 +185,37 @@ WHERE avg_cost_two_people < (SELECT Q1 FROM quartiles) - 1.5 * (SELECT Q3 - Q1 F
 - There are 660 outliers (9.29% of the total) that fall outside the upper and lower bounds, which is a significant number.
 ***
 
-### 11. Unique values in Categorical columns
+### 11. Correlation of all Numerical columns
+a) **Avg_cost_two_people and Rating column**
+```sql
+SELECT 
+  ROUND((AVG(avg_cost_two_people * rating) - AVG(avg_cost_two_people) * AVG(rating)) / (STDDEV(avg_cost_two_people) * STDDEV(rating)),3) AS correlation
+FROM sales
+WHERE rating IS NOT NULL AND avg_cost_two_people IS NOT NULL;
+```
+![image](https://github.com/Pratham955/Zomato_Banglore_Data_Analysis/assets/75075887/baac25d5-a5d0-482c-99fa-da304e4bd951)
+
+b) **Num_of_ratings and Rating column**
+```sql
+SELECT 
+  ROUND((AVG(num_of_ratings * rating) - AVG(num_of_ratings) * AVG(rating)) / (STDDEV(num_of_ratings) * STDDEV(rating)),3) AS correlation
+FROM sales
+WHERE rating IS NOT NULL AND num_of_ratings IS NOT NULL;
+```
+![image](https://github.com/Pratham955/Zomato_Banglore_Data_Analysis/assets/75075887/dea11fd4-67be-4641-8db2-d6ae3cbd52bf)
+
+c) **Num_of_ratings and Avg_cost_two_people column**
+```sql
+SELECT 
+  ROUND((AVG(num_of_ratings * avg_cost_two_people) - AVG(num_of_ratings) * AVG(avg_cost_two_people)) / (STDDEV(num_of_ratings) * STDDEV(avg_cost_two_people)),3) AS correlation
+FROM sales
+WHERE avg_cost_two_people IS NOT NULL AND num_of_ratings IS NOT NULL;
+```
+![image](https://github.com/Pratham955/Zomato_Banglore_Data_Analysis/assets/75075887/c93571f3-8a33-42a0-8585-f70c6e200926)
+- There is a weak positive correlation between all columns. So, we cannot say strongly that any column strongly depends on another.
+***
+
+### 12. Unique values in Categorical columns
 ```sql
 SELECT 
     COUNT(DISTINCT restaurant_name) AS num_restaurants, COUNT(DISTINCT TRIM(j1.restaurant_type)) AS num_types_of_restaurant,
