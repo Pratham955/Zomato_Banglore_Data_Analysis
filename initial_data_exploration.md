@@ -46,11 +46,55 @@ LIMIT 5;
 ### Does having an Online Delivery option affect Ratings or the Average cost of two people?
 ```sql
 SELECT
-	online_order, COUNT(*) AS num_restaurants, CONCAT(ROUND(COUNT(*)*100/(SELECT COUNT(*) FROM sales),2),'%') AS percent, ROUND(AVG(rating),2) AS avg_rating, ROUND(AVG(avg_cost_two_people),2) AS avg_cost_two_people
+  online_order,
+  COUNT(*) AS num_restaurants,
+  CONCAT(ROUND(COUNT(*)*100/(SELECT COUNT(*) FROM sales),2),'%') AS percent,
+  ROUND(AVG(rating),2) AS avg_rating,
+  ROUND(AVG(avg_cost_two_people),2) AS avg_cost_two_people
 FROM sales
 GROUP BY 1;
 ```
 ![image](https://github.com/Pratham955/Zomato_Banglore_Data_Analysis/assets/75075887/b2ba9724-6e3e-4a8a-9979-dcffd1c41ac4)
-- Restaurants with online delivery have a slightly higher average rating (3.55) compared to those without (3.47).
-- Restaurants with online delivery have a lower average cost for two people (487.75) than those without (599.00).
+- Restaurants with online delivery have a **slightly higher average rating** (3.55) compared to those without (3.47).
+- Restaurants with online delivery have a **lower average cost** for two people (487.75) than those without (599.00), which is surprising.
+***
+
+1. Why does an online delivery option have a lower average cost?
+```sql
+SELECT 
+  online_order,
+  MIN(avg_cost_two_people) AS minimum,
+  MAX(avg_cost_two_people) AS maximum,
+  ROUND(AVG(avg_cost_two_people), 2) AS average,
+  MAX(CASE WHEN percentile BETWEEN 0 AND 25 THEN avg_cost_two_people END) AS '25th Percentile',
+  MAX(CASE WHEN percentile BETWEEN 25 AND 50 THEN avg_cost_two_people END) AS 'Median',
+  MAX(CASE WHEN percentile BETWEEN 50 AND 75 THEN avg_cost_two_people END) AS '75th Percentile',
+  MAX(CASE WHEN percentile BETWEEN 50 AND 90 THEN avg_cost_two_people END) AS '90th Percentile'
+FROM (
+  SELECT 
+    online_order,
+    avg_cost_two_people,
+    PERCENT_RANK() OVER (PARTITION BY online_order ORDER BY avg_cost_two_people) * 100 AS percentile
+  FROM sales
+) AS percentile_data
+GROUP BY online_order;
+```
+![image](https://github.com/Pratham955/Zomato_Banglore_Data_Analysis/assets/75075887/22aa1f9e-212b-42a5-b09d-3374c67321b4)
+- The minimum, maximum, and values after the median are less for having an online delivery option compared with not having one.
+- Higher values pull up the average cost of not having an online delivery option. 
+***
+
+### Does having Table Booking option affect Ratings or the Average cost of two people?
+```sql
+SELECT 
+  table_booking,
+  COUNT(*) AS num_restaurants,
+  CONCAT(ROUND(COUNT(*)*100/(SELECT COUNT(*) FROM sales),2),'%') AS percent,
+  ROUND(AVG(rating),2) AS avg_rating,
+  ROUND(AVG(avg_cost_two_people),2) AS avg_cost_two_people
+FROM sales
+GROUP BY 1;
+```
+![image](https://github.com/Pratham955/Zomato_Banglore_Data_Analysis/assets/75075887/911ca5eb-70c4-4342-b533-cc604d539e2f)
+
 ***
